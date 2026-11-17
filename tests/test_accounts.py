@@ -141,6 +141,20 @@ class AccountTests(unittest.TestCase):
             db.execute('UPDATE device_sessions SET expires_at=0')
         self.assertEqual(replay.get('/').status_code, 302)
 
+    def test_static_revalidation_keeps_private_pages_uncached(self):
+        asset = self.client.get('/static/style.css')
+        self.addCleanup(asset.close)
+        self.assertEqual(asset.status_code, 200)
+        self.assertEqual(asset.headers['Cache-Control'], 'public, max-age=0, must-revalidate')
+        self.assertNotIn('Set-Cookie', asset.headers)
+        cached = self.client.get('/static/style.css', headers={'If-None-Match': asset.headers['ETag']})
+        self.addCleanup(cached.close)
+        self.assertEqual(cached.status_code, 304)
+        self.register()
+        for route in ('/', '/settings', '/journal/body', '/progress'):
+            response = self.client.get(route)
+            self.assertEqual(response.headers['Cache-Control'], 'private, no-store')
+
     def test_rate_limit(self):
         self.token(self.client)
         for _ in range(30):

@@ -14,6 +14,7 @@
 </select>
 {% elif kind == 'memo' %}<textarea name="{{ key }}" rows="3" maxlength="2000">{{ val or '' }}</textarea>
 {% else %}<input name="{{ key }}" type="{{ {'int':'number','num':'number'}.get(kind,kind) }}" value="{{ val if val is not none else '' }}"
+{% if kind in ('int','num') %}inputmode="{{ 'decimal' if kind == 'num' else 'numeric' }}"{% endif %}
 {% if lo is not none %}min="{{ lo }}" max="{{ hi }}" step="{{ 'any' if kind == 'num' else '1' }}"{% endif %}{% if kind == 'text' %} maxlength="120"{% endif %}{% if required %} required{% endif %}>
 {% endif %}</label>
 {% endfor %}

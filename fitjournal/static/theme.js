@@ -7,6 +7,28 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const menu = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('#main-nav');
+    if (menu && nav) {
+      const mobile = window.matchMedia('(max-width: 700px)');
+      const resetMenu = () => {
+        menu.hidden = !mobile.matches;
+        nav.hidden = mobile.matches;
+        menu.setAttribute('aria-expanded', 'false');
+      };
+      resetMenu();
+      mobile.addEventListener('change', resetMenu);
+      menu.addEventListener('click', () => {
+        nav.hidden = !nav.hidden;
+        menu.setAttribute('aria-expanded', String(!nav.hidden));
+      });
+      nav.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && mobile.matches) {
+          resetMenu();
+          menu.focus();
+        }
+      });
+    }
     const toggle = document.querySelector('[data-theme-toggle]');
     if (!toggle) return;
     const update = () => {
