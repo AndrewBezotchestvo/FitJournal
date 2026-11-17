@@ -1,4 +1,3 @@
-import re
 import sqlite3
 import tempfile
 import unittest
@@ -121,6 +120,26 @@ class AccountTests(unittest.TestCase):
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM plan').fetchone()[0],21)
         self.assertNotIn('Жим ногами',bob.get('/journal/plan').text)
         self.assertIn('Жим ногами',self.client.get('/journal/plan').text)
+
+    def test_remembered_session_survives_restart_and_logout_revokes_it(self):
+        self.register()
+        self.post(self.client, '/logout')
+        login = self.post(self.client, '/login', username='alice', password=PASSWORD, remember='1')
+        self.assertIn('Expires=', login.headers['Set-Cookie'])
+        cookie = self.client.get_cookie('session').value
+        restarted = create_app({'TESTING': True, 'DATABASE': self.database}).test_client()
+        restarted.set_cookie('session', cookie)
+        self.assertEqual(restarted.get('/').status_code, 200)
+        self.post(restarted, '/logout')
+        replay = self.app.test_client()
+        replay.set_cookie('session', cookie)
+        self.assertEqual(replay.get('/').status_code, 302)
+        self.token(replay)
+        temporary = self.post(replay, '/login', username='alice', password=PASSWORD)
+        self.assertNotIn('Expires=', temporary.headers['Set-Cookie'])
+        with sqlite3.connect(self.database) as db:
+            db.execute('UPDATE device_sessions SET expires_at=0')
+        self.assertEqual(replay.get('/').status_code, 302)
 
     def test_rate_limit(self):
         self.token(self.client)

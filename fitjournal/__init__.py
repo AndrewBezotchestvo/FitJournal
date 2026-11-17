@@ -58,6 +58,8 @@ def create_app(config=None):
 
     with app.app_context(), db() as conn:
         conn.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)')
+        conn.execute('CREATE TABLE IF NOT EXISTS device_sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at INTEGER NOT NULL)')
+        conn.execute('CREATE INDEX IF NOT EXISTS device_sessions_expiry ON device_sessions (expires_at)')
         conn.execute('CREATE TABLE IF NOT EXISTS user_settings (user_id INTEGER PRIMARY KEY REFERENCES users(id), name TEXT NOT NULL, kcal INTEGER NOT NULL, protein INTEGER NOT NULL)')
         sqltypes = {'int':'INTEGER','weekday':'INTEGER','num':'REAL'}
         for table, (_, fields) in TABS.items():
