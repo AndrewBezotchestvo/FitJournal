@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% set title = 'Меню на неделю' %}
+{% block content %}
+<div class="heading"><h1>{{ title }}</h1><a href="{{ url_for('journal',table='food') }}">Дневник питания</a></div>
+<p>Без риса и рыбы. Калории и белок указаны ориентировочно. «Записать» открывает форму, где можно исправить порцию и дату перед сохранением.</p>
+{% for item in week %}{% set day_index = loop.index0 %}
+<h2>{{ item.title }}</h2>
+{% for meal in item.meals %}
+<article class="line">
+<div><h3>{{ meal.name }}</h3><p>{{ meal.note }}</p><p>≈ {{ meal.kcal }} ккал · {{ meal.protein }} г белка</p></div>
+<a class="button secondary" href="{{ url_for('log_meal',day_index=day_index,meal_index=loop.index0) }}">Записать</a>
+</article>
+{% endfor %}{% endfor %}
+{% endblock %}

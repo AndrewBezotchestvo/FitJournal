@@ -4,6 +4,8 @@
 {% if table != 'plan' %}<form class="filters" method="get"><label>Дата <input type="date" name="day" value="{{ selected }}"></label><button class="secondary">Показать</button><a href="{{ url_for('journal',table=table) }}">Все даты</a></form>{% endif %}
 {% if totals is not none %}<p class="notice">За день: {{ totals[0]|round(1) }} ккал · {{ totals[1]|round(1) }} г белка</p>{% endif %}
 {% if table == 'plan' %}<p>План повторяется каждую неделю. Кардио показано перед силовыми. Кнопка «Записать» переносит упражнение в дневник с возможностью изменить фактические значения.</p>{% endif %}
+{% if table == 'plan' %}<form method="post" action="{{ url_for('import_plan') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="secondary">Добавить стартовый план</button></form>{% endif %}
+{% if table == 'food' %}<p><a href="{{ url_for('menu') }}">Открыть меню на неделю</a></p>{% endif %}
 {% if table == 'strength' %}<p>Если вес или повторы менялись от подхода к подходу, запиши каждый вариант отдельной строкой.</p>{% endif %}
 {% if not rows %}<article>Записей пока нет.</article>{% endif %}
 {% for row in rows %}
