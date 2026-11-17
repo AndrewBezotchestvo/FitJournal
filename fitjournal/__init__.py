@@ -1,3 +1,4 @@
+import json
 import click
 import math
 import os
@@ -134,6 +135,40 @@ def create_app(config=None):
         latest = conn.execute('SELECT weight,day FROM body WHERE user_id=? AND weight IS NOT NULL ORDER BY day DESC,id DESC LIMIT 1',(g.user['id'],)).fetchone()
         planned = conn.execute("SELECT * FROM plan WHERE user_id=? AND weekday=? ORDER BY kind,id",(g.user['id'],date.today().isoweekday())).fetchall()
         return render_template('home.html', settings=settings, meals=meals, latest=latest, planned=planned)
+
+    @app.post('/plan/import')
+    def import_plan():
+        data = json.loads(Path(app.root_path, 'starter_plan.json').read_text(encoding='utf-8'))
+        conn = db()
+        with conn:
+            conn.execute('BEGIN IMMEDIATE')
+            existing = {
+                tuple(row) for row in conn.execute(
+                    'SELECT weekday, kind, name FROM plan WHERE user_id=?', (g.user['id'],)
+                )
+            }
+            added = 0
+            for row in data:
+                if (row['weekday'], row['kind'], row['name']) not in existing:
+                    insert('plan', row)
+                    added += 1
+        flash(f'Добавлено строк плана: {added}.' if added else 'Стартовый план уже добавлен.')
+        return redirect(url_for('journal', table='plan'))
+
+    @app.get('/menu')
+    def menu():
+        week = json.loads(Path(app.root_path, 'starter_menu.json').read_text(encoding='utf-8'))
+        return render_template('menu.html', week=week)
+
+    @app.get('/menu/<int:day_index>/<int:meal_index>/log')
+    def log_meal(day_index, meal_index):
+        week = json.loads(Path(app.root_path, 'starter_menu.json').read_text(encoding='utf-8'))
+        if day_index >= len(week) or meal_index >= len(week[day_index]['meals']):
+            abort(404)
+        values = dict(week[day_index]['meals'][meal_index], day=date.today().isoformat())
+        title, fields = TABS['food']
+        return render_template('form.html', title=title, fields=fields, values=values,
+                               error=None, table='food', action=url_for('edit', table='food'))
 
     @app.get('/journal/<table>')
     def journal(table):
