@@ -25,6 +25,8 @@ def register_auth(app, db):
 
     @app.before_request
     def authenticate():
+        if request.endpoint == 'static':
+            return None
         token = session.get('device_token')
         g.user = None
         if isinstance(token, str):
@@ -43,7 +45,8 @@ def register_auth(app, db):
 
     @app.after_request
     def response_headers(response):
-        response.headers['Cache-Control'] = 'private, no-store'
+        response.headers['Cache-Control'] = ('public, max-age=0, must-revalidate'
+                                             if request.endpoint == 'static' else 'private, no-store')
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         return response
