@@ -219,3 +219,29 @@ main { animation: enter-page 240ms ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* A compressed background sits behind opaque, readable surfaces. */
+body {
+  background-image: linear-gradient(#0b0d125c, #0b0d12b3), url("cyber-gym.jpg");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+:root[data-theme="light"] body {
+  background-image: linear-gradient(#f5f3e9db, #f5f3e9ed), url("cyber-gym.jpg");
+}
+.week-plan { display: grid; gap: .65rem; margin-block: 1.2rem; }
+.plan-day { background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--accent); }
+.plan-day > summary { padding: .9rem 1rem; min-height: 56px; gap: .6rem; justify-content: flex-start; text-align: left; font-weight: 750; }
+.plan-day > summary::before { content: "+"; font: 1.25rem var(--mono); width: 1rem; flex-shrink: 0; }
+.plan-day[open] > summary::before { content: "−"; }
+.plan-day > summary::marker { content: ""; }
+.plan-day > summary::-webkit-details-marker { display: none; }
+.plan-day[open] > summary { border-bottom: 1px solid var(--line); color: var(--text); }
+.day-count { margin-left: auto; color: var(--muted); font: .8rem var(--mono); white-space: nowrap; }
+.day-content { padding: .75rem; }
+.plan-day[open] .day-content { animation: enter-page 180ms ease-out; }
+@media (max-width: 700px) {
+  .plan-day > summary { padding: .85rem .7rem; }
+  .day-content { padding: .5rem; }
+}
