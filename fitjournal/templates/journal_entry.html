@@ -1,0 +1,7 @@
+<article class="entry"><h3>{{ row.name if 'name' in row.keys() else row.day }}</h3>
+<dl>{% for key,label,kind,lo,hi,required in fields if key not in ('name','weekday') and not (table == 'body' and key == 'day') and row[key] is not none %}
+<div><dt>{{ label }}</dt><dd>{% if kind == 'kind' %}{{ 'Кардио' if row[key] == 'cardio' else 'Силовое' }}{% else %}{{ row[key] }}{% endif %}</dd></div>
+{% endfor %}</dl>
+<div class="actions"><a href="{{ url_for('edit',table=table,row_id=row.id) }}">Изменить</a>
+{% if table == 'plan' %}<a href="{{ url_for('log',row_id=row.id) }}">Записать</a>{% endif %}
+<form method="post" action="{{ url_for('delete',table=table,row_id=row.id) }}" data-confirm><input type="hidden" name="csrf" value="{{ csrf }}"><button class="danger">Удалить</button></form></div></article>
